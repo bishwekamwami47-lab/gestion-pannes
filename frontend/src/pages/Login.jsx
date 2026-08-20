@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { useLang } from '../i18n';
@@ -9,9 +9,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { t } = useLang();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Nettoie toute session périmée restée en mémoire
+    // (ex. tokens signés avec une ancienne SECRET_KEY → 401 sur toutes les requêtes)
+    logout();
+  }, [logout]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

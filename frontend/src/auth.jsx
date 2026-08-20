@@ -26,7 +26,9 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    const lang = localStorage.getItem('lang');
     localStorage.clear();
+    if (lang) localStorage.setItem('lang', lang);
     setUser(null);
   };
 
