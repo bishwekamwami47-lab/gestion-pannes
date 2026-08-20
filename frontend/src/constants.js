@@ -1,0 +1,19 @@
+export const STATUT_KEYS = ['EN_COURS', 'RESOLU', 'TRANSFERT_EXTERNE', 'ACHAT_MATERIEL'];
+
+export const STATUT_COLORS = {
+  EN_COURS: '#856404',
+  RESOLU: '#155724',
+  TRANSFERT_EXTERNE: '#721c24',
+  ACHAT_MATERIEL: '#0c5460',
+};
+
+export const STATUT_BG = {
+  EN_COURS: '#fff3cd',
+  RESOLU: '#d4edda',
+  TRANSFERT_EXTERNE: '#f8d7da',
+  ACHAT_MATERIEL: '#d1ecf1',
+};
+
+export const ROLE_KEYS = ['ADMIN_GENERAL', 'INFORMATICIEN'];
+
+export const SPECIALITE_KEYS = ['RESEAU', 'MATERIEL', 'LOGICIEL', 'SECURITE', 'IMPRESSION', 'AUTRE'];
