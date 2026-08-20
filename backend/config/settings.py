@@ -8,12 +8,17 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Charge les variables d'environnement depuis backend/.env (jamais commité)
+load_dotenv(BASE_DIR / '.env')
+
 
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = 'django-insecure-%%ln&0du)_-lmf6ot&@wp+l=&0a43jbm#ko(%5qy!()+92kgyt'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-insecure-key-à-changer')
 
 DEBUG = True
 
