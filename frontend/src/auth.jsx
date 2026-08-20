@@ -1,5 +1,5 @@
 /* eslint-disable react/only-export-components */
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useCallback, useMemo, useState } from 'react';
 import API from './api';
 
 const AuthContext = createContext(null);
@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const login = async (username, password) => {
+  const login = useCallback(async (username, password) => {
     const res = await API.post('auth/login/', { username, password });
     localStorage.setItem('access_token', res.data.access);
     localStorage.setItem('refresh_token', res.data.refresh);
@@ -23,20 +23,18 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(me.data));
     setUser(me.data);
     return me.data;
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     const lang = localStorage.getItem('lang');
     localStorage.clear();
     if (lang) localStorage.setItem('lang', lang);
     setUser(null);
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = useMemo(() => ({ user, login, logout }), [user, login, logout]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
