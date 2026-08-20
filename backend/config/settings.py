@@ -8,21 +8,27 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Racine du projet (bon/) : contient backend/ et frontend/
+PROJECT_ROOT = BASE_DIR.parent
 
 # Charge les variables d'environnement depuis backend/.env (jamais commité)
 load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-insecure-key-à-changer')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-DEBUG = True
+# En production (DEBUG=False), la SECRET_KEY est OBLIGATOIRE via l'environnement :
+# Django lèvera une erreur si elle manque.
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-insecure-key-à-changer' if DEBUG else '')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h]
 
 
 # Application definition
@@ -47,6 +53,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Indispensable en toute première position
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Sert les fichiers statiques en production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,7 +85,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-if os.environ.get('DB_ENGINE', 'sqlite') == 'postgres':
+# En production : DATABASE_URL (ex. Neon postgres://user:pass@host/db)
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {'default': dj_database_url.config(default=os.environ['DATABASE_URL'], conn_max_age=600)}
+elif os.environ.get('DB_ENGINE', 'sqlite') == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -127,6 +137,12 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# En production, on sert aussi le frontend React déjà compilé (frontend/dist)
+FRONTEND_DIST = PROJECT_ROOT / 'frontend' / 'dist'
+STATICFILES_DIRS = [FRONTEND_DIST] if FRONTEND_DIST.exists() else []
+WHITENOISE_ROOT = str(FRONTEND_DIST) if FRONTEND_DIST.exists() else None
 
 AUTH_USER_MODEL = 'incidents.Utilisateur'
 
@@ -134,7 +150,14 @@ AUTH_USER_MODEL = 'incidents.Utilisateur'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Autoriser le frontend React (CORS)
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',') if o.strip()
+]
+
+# Origines de confiance pour les formulaires (admin Django) derrière un proxy HTTPS
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()
+]
 
 # Configuration Django REST Framework & JWT
 REST_FRAMEWORK = {

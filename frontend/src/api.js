@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  // En production, l'API est servie par le même domaine → '/api/'.
+  // En dev ou si l'API est ailleurs, définir VITE_API_URL (ex. https://api.exemple.com/api/).
+  baseURL: import.meta.env.VITE_API_URL || '/api/',
 });
 
 // Ajouter le token JWT à chaque requête si l'utilisateur est connecté
